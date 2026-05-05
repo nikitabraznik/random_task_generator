@@ -1,5 +1,7 @@
 import unittest
 import random
+import json
+import os
 from datetime import datetime
 
 class TestRandomTaskGenerator(unittest.TestCase):
@@ -13,6 +15,12 @@ class TestRandomTaskGenerator(unittest.TestCase):
             {"task": "Написать код", "category": "Работа"},
         ]
         self.categories = ["Учёба", "Спорт", "Работа", "Дом", "Личное"]
+        self.test_filename = "test_temp.json"
+        
+    def tearDown(self):
+        # Удаляем временный файл после тестов
+        if os.path.exists(self.test_filename):
+            os.remove(self.test_filename)
         
     def test_validate_task_not_empty(self):
         """Проверка задачи (не должна быть пустой)"""
@@ -106,6 +114,30 @@ class TestRandomTaskGenerator(unittest.TestCase):
         self.assertIn("date", entry)
         self.assertIsNotNone(entry["date"])
         self.assertTrue(len(entry["date"]) > 0)
+
+    # ========== НОВЫЙ ТЕСТ ДЛЯ JSON ==========
+    def test_save_and_load_json(self):
+        """Проверка сохранения и загрузки истории в JSON"""
+        history = [
+            {"task": "Тест1", "category": "Спорт", "date": "2026-05-05 10:00:00"},
+            {"task": "Тест2", "category": "Учёба", "date": "2026-05-05 11:00:00"},
+        ]
+        
+        # Сохранение
+        with open(self.test_filename, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+        
+        # Проверка что файл создан
+        self.assertTrue(os.path.exists(self.test_filename))
+        
+        # Загрузка
+        with open(self.test_filename, 'r', encoding='utf-8') as f:
+            loaded_history = json.load(f)
+        
+        # Проверка данных
+        self.assertEqual(len(loaded_history), 2)
+        self.assertEqual(loaded_history[0]["task"], "Тест1")
+        self.assertEqual(loaded_history[1]["category"], "Учёба")
 
 if __name__ == "__main__":
     unittest.main()
